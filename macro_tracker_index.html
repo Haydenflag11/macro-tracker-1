@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Macro Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .goal {
+      margin-top: 15px;
+      padding: 10px;
+      background: #eef7ff;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Macro Tracker</h1>
+
+    <div>
+      <h2>Daily Goals</h2>
+      <input type="number" id="goalCalories" placeholder="Calories Goal">
+      <input type="number" id="goalProtein" placeholder="Protein Goal (g)">
+      <input type="number" id="goalCarbs" placeholder="Carbs Goal (g)">
+      <input type="number" id="goalFat" placeholder="Fat Goal (g)">
+      <button onclick="saveGoals()">Save Goals</button>
+    </div>
+
+    <div>
+      <h2>Add Food</h2>
+      <input type="text" id="foodName" placeholder="Food name">
+      <input type="number" id="calories" placeholder="Calories">
+      <input type="number" id="protein" placeholder="Protein (g)">
+      <input type="number" id="carbs" placeholder="Carbs (g)">
+      <input type="number" id="fat" placeholder="Fat (g)">
+      <button onclick="addFood()">Add</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Food</th>
+          <th>Calories</th>
+          <th>Protein</th>
+          <th>Carbs</th>
+          <th>Fat</th>
+        </tr>
+      </thead>
+      <tbody id="foodTable"></tbody>
+    </table>
+
+    <div class="goal">
+      <h3>Progress</h3>
+      <p id="progress"></p>
+    </div>
+  </div>
+
+  <script>
+    let foods = [];
+    let goals = JSON.parse(localStorage.getItem('macroGoals')) || {calories:0, protein:0, carbs:0, fat:0};
+
+    function saveGoals(){
+      goals = {
+        calories: Number(document.getElementById('goalCalories').value),
+        protein: Number(document.getElementById('goalProtein').value),
+        carbs: Number(document.getElementById('goalCarbs').value),
+        fat: Number(document.getElementById('goalFat').value)
+      };
+      localStorage.setItem('macroGoals', JSON.stringify(goals));
+      updateProgress();
+    }
+
+    function addFood(){
+      let food = {
+        name: document.getElementById('foodName').value,
+        calories: Number(document.getElementById('calories').value),
+        protein: Number(document.getElementById('protein').value),
+        carbs: Number(document.getElementById('carbs').value),
+        fat: Number(document.getElementById('fat').value)
+      };
+      foods.push(food);
+      renderTable();
+      updateProgress();
+    }
+
+    function renderTable(){
+      let table = document.getElementById('foodTable');
+      table.innerHTML = '';
+      foods.forEach(f => {
+        let row = `<tr><td>${f.name}</td><td>${f.calories}</td><td>${f.protein}</td><td>${f.carbs}</td><td>${f.fat}</td></tr>`;
+        table.innerHTML += row;
+      });
+    }
+
+    function updateProgress(){
+      let total = foods.reduce((acc,f) => {
+        acc.calories += f.calories;
+        acc.protein += f.protein;
+        acc.carbs += f.carbs;
+        acc.fat += f.fat;
+        return acc;
+      }, {calories:0, protein:0, carbs:0, fat:0});
+
+      document.getElementById('progress').innerHTML = `Calories: ${total.calories}/${goals.calories}, Protein: ${total.protein}/${goals.protein}g, Carbs: ${total.carbs}/${goals.carbs}g, Fat: ${total.fat}/${goals.fat}g`;
+    }
+
+    // Initialize goals in inputs
+    document.getElementById('goalCalories').value = goals.calories;
+    document.getElementById('goalProtein').value = goals.protein;
+    document.getElementById('goalCarbs').value = goals.carbs;
+    document.getElementById('goalFat').value = goals.fat;
+    updateProgress();
+  </script>
+</body>
+</html>
